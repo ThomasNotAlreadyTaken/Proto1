@@ -6,17 +6,27 @@ using static UnityEngine.InputSystem.InputAction;
 
 public class GameManager : MonoBehaviour
 {
-    public PlayerInput GetPlayerInput { get; private set; }
+    private InputMaster inputMaster;
     private Vector2 playerDirection;
     private GameObject player;
     private GameObject camera;
     private Rigidbody2D rigidbody;
 
+    private void OnEnable()
+    {
+        inputMaster = new InputMaster();
+        inputMaster.Balade.Enable();
+    }
+
+    private void OnDisable()
+    {
+        inputMaster.Balade.Disable();
+    }
+
+
     private void Awake()
     {
         // [...] Code d'initialisation du Singleton
-        GetPlayerInput = GetComponent<PlayerInput>();
-        GetPlayerInput.actions["move"].performed += MoveAxis;
 
         player = GameObject.FindGameObjectWithTag("player");
         camera = GameObject.FindGameObjectWithTag("MainCamera");
@@ -32,17 +42,14 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        playerDirection = inputMaster.Balade.Move.ReadValue<Vector2>();
     }
 
     private void FixedUpdate()
     {
-        player.transform.position += 0.1f * (Vector3)GetPlayerInput.actions["move"].ReadValue<Vector2>();
-        //rigidbody.MovePosition(new Vector2(player.transform.position.x, player.transform.position.y) + 0.1f * GetPlayerInput.actions["move"].ReadValue<Vector2>());
-        camera.transform.position += 0.1f * (Vector3)GetPlayerInput.actions["move"].ReadValue<Vector2>();
+        //player.transform.position += 0.1f * (Vector3)playerDirection;
+        rigidbody.MovePosition(new Vector2(player.transform.position.x, player.transform.position.y) + 0.1f * playerDirection);
+        camera.transform.position += 0.1f * (Vector3)playerDirection;
     }
 
-    public void MoveAxis(CallbackContext callbackAxis)
-    {
-        playerDirection = callbackAxis.ReadValue<Vector2>();
-    }
 }
